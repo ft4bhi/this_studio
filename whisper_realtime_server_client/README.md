@@ -53,3 +53,10 @@ cat > README.md <<'EOF'
 EOF
 docker build -t whisper-rt .
 docker run --gpus all -p 8000:8000 whisper-rt
+
+for cpu
+# Build the image
+docker build -t whisper-rt-cpu .
+
+# Run the container
+docker run -p 8000:8000 whisper-rt-cpu

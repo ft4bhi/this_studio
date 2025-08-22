@@ -1,0 +1,13 @@
+Requirement already satisfied: xgboost==2.0.2 in /system/conda/miniconda3/envs/cloudspace/lib/python3.10/site-packages (2.0.2)
+Requirement already satisfied: numpy in /system/conda/miniconda3/envs/cloudspace/lib/python3.10/site-packages (from xgboost==2.0.2) (2.1.1)
+Requirement already satisfied: scipy in /system/conda/miniconda3/envs/cloudspace/lib/python3.10/site-packages (from xgboost==2.0.2) (1.11.4)
+Collecting numpy (from xgboost==2.0.2)
+  Downloading numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
+Downloading numpy-1.26.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 18.2/18.2 MB 112.5 MB/s  0:00:00
+Installing collected packages: numpy
+  Attempting uninstall: numpy
+    Found existing installation: numpy 2.1.1
+    Uninstalling numpy-2.1.1:
+      Successfully uninstalled numpy-2.1.1
+Successfully installed numpy-1.26.4
