@@ -14,8 +14,9 @@ RUN python3 -m pip install --upgrade pip \
 COPY server.py /app/server.py
 
 EXPOSE 8000
-ENV WHISPER_MODEL=base
-ENV WHISPER_DEVICE=cpu
-ENV WHISPER_COMPUTE_TYPE=int8
+ENV WHISPER_MODEL=small
+ENV WHISPER_DEVICE=cpu          
+ENV WHISPER_COMPUTE_TYPE=int8   
+ENV WHISPER_LANGUAGE=en
 
 CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -8,13 +8,14 @@ from faster_whisper import WhisperModel
 
 # ====== CONFIG ======
 SAMPLE_RATE = 16000
-MIN_SECONDS_PER_INFER = 2.0
+MIN_SECONDS_PER_INFER = 2.5  # Reduced buffer for faster response
 MIN_SAMPLES = int(SAMPLE_RATE * MIN_SECONDS_PER_INFER)
 
 # Use environment variables with fallbacks
-MODEL_NAME = os.getenv("WHISPER_MODEL", "base")
+MODEL_NAME = os.getenv("WHISPER_MODEL", "small")
 DEVICE = os.getenv("WHISPER_DEVICE", "cpu")
 COMPUTE_TYPE = os.getenv("WHISPER_COMPUTE_TYPE", "int8")
+LANGUAGE = os.getenv("WHISPER_LANGUAGE", "en")  # Default to Hindi
 
 # ====== APP ======
 app = FastAPI()
@@ -23,7 +24,14 @@ print("🚀 Starting Whisper Realtime Server...")
 print(f"📦 Loading model: {MODEL_NAME} on {DEVICE} ({COMPUTE_TYPE})")
 
 try:
-    model = WhisperModel(MODEL_NAME, device=DEVICE, compute_type=COMPUTE_TYPE)
+    # Optimized settings for faster CPU processing
+    model = WhisperModel(
+        MODEL_NAME, 
+        device=DEVICE, 
+        compute_type=COMPUTE_TYPE,
+        cpu_threads=4,  # Optimize CPU usage
+        num_workers=1   # Single worker for stability
+    )
     print("✅ Model loaded successfully")
 except Exception as e:
     print("💥 Failed to load model:", repr(e))
@@ -91,15 +99,30 @@ async def ws_transcribe(websocket: WebSocket):
                 def do_transcribe(a: np.ndarray) -> str:
                     try:
                         print(f"🧠 Transcribing {a.size} samples (~{a.size/SAMPLE_RATE:.2f}s)")
+                        
+                        # Check if audio has sufficient volume (simple silence detection)
+                        audio_rms = np.sqrt(np.mean(a**2))
+                        if audio_rms < 0.01:  # Very quiet audio
+                            print("🔇 Audio too quiet, skipping transcription")
+                            return ""
+                        
                         segments, _ = model.transcribe(
                             a,
-                            beam_size=5,
+                            beam_size=1,  # Reduced from 5 for faster processing
                             vad_filter=True,
-                            language=None,
+                            language=LANGUAGE if LANGUAGE != "auto" else None,
+                            condition_on_previous_text=False,  # Faster processing
                         )
                         result = " ".join(s.text for s in segments).strip()
                         print(f"✅ Transcription result: '{result}'")
                         return result
+                    except ValueError as e:
+                        if "empty sequence" in str(e):
+                            print("🔇 No speech detected in audio chunk")
+                            return ""
+                        else:
+                            print("💥 Transcription ValueError:", repr(e))
+                            return ""
                     except Exception as e:
                         print("💥 Transcription error:", repr(e))
                         traceback.print_exc()
